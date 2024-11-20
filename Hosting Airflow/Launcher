@@ -1,0 +1,15 @@
+chmod +x install_airflow.sh
+
+./install_airflow.sh
+
+source airflow_env/bin/activate
+
+
+export AIRFLOW_HOME=~/airflow
+
+
+airflow db init
+
+airflow users create -u admin -f Ad -l Min -r Admin -e ad@min.com 
+
+airflow webserver --port 8080 & airflow scheduler &
