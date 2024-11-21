@@ -10,6 +10,6 @@ export AIRFLOW_HOME=~/airflow
 
 airflow db init
 
-airflow users create -u admin -f Ad -l Min -r Admin -e ad@min.com 
+airflow_admin_user.sh
 
 airflow webserver --port 8080 & airflow scheduler &
