@@ -10,6 +10,8 @@ export AIRFLOW_HOME=~/airflow
 
 airflow db init
 
-airflow_admin_user.sh
+chmod +x airflow_admin_user.sh
+
+./airflow_admin_user.sh
 
 airflow webserver --port 8080 & airflow scheduler &
