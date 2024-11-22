@@ -28,7 +28,7 @@ hacemos un pull de la ultima versión
 
 Va a pedir usuario y KEY, leer el punto anterior.
 
-## Una vez nuestro código tiene la ultima version correr lo siguiente
+#### Una vez que nuestro código tiene la ultima version correr lo siguiente
 
 Viajar a la carpeta correspondiente
 
