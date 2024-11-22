@@ -1,5 +1,7 @@
 chmod +x install_airflow.sh
 
+rm -rf ~/airflow/*
+
 ./install_airflow.sh
 
 source airflow_env/bin/activate
