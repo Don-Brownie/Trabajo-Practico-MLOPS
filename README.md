@@ -41,3 +41,7 @@ Ejecutar el launcher
   `./Launcher`
 
 Con esto Airflow ya debería ejecutarse. Se accede mediante el IP de la EC2 y el puerto 8080
+
+#### Acceso a Airflow
+
+Las credenciales para acceder al airflow son las que están en el archivo "airflow_admin_user.sh". Si se edita este archivo va a cambiar dentro del host de Airflow
