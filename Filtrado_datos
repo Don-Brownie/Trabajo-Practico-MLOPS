@@ -1,6 +1,3 @@
-cd Trabajo-Practico-MLOPS
-
-nano process_s3_data.py
 
 import boto3
 import pandas as pd
