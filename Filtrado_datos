@@ -1,6 +1,7 @@
 
 import boto3
 import pandas as pd
+from datetime import datetime 
 from io import StringIO
 
 # Configurar la sesión de AWS 
@@ -32,9 +33,21 @@ print(advertiser_ids.head())
 print("\nproduct_views:")
 print(product_views.head())
 
+#Definición de funciones para filtrar los datos
+def filter_ads_views(ads_views, advertiser_ids):
+    df = ads_views[ads_views['advertiser_id'].isin(advertiser_ids)]
+    df = df[df['date'] == datetime.today().strftime('%Y-%m-%d')]
+    return df
+
+def filter_product_views(product_views, advertiser_ids):
+    advertisers = advertiser_ids['advertiser_id'].tolist()
+    df = product_views[product_views['advertiser_id'].isin(advertisers)]
+    df = df[df['date'] == datetime.today().strftime('%Y-%m-%d')]
+    return df
+
 # Filtrar los logs para que solo contengan advertisers activos
-ads_views_filtered = ads_views[ads_views['advertiser_id'].isin(advertiser_ids['advertiser_id'])]
-product_views_filtered = product_views[product_views['advertiser_id'].isin(advertiser_ids['advertiser_id'])]
+ads_views_filtered = filter_ads_views(ads_views, advertiser_ids)
+product_views_filtered = filter_product_views(product_views, advertiser_ids)
 
 # Guardar los resultados filtrados en S3 en una carpeta 'Datos filtrados/'
 output_ads_views_key = 'Datos filtrados/ads_views_filtered.csv'  # Ruta de salida en el bucket
