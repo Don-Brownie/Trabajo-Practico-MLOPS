@@ -1,0 +1,76 @@
+
+import boto3
+import pandas as pd
+from datetime import datetime
+from io import StringIO
+
+# Configurar el cliente de S3
+s3_client = boto3.client('s3', region_name='us-east-1')
+
+# Función para leer archivos CSV desde S3
+def read_s3_csv(bucket_name, file_key):
+    """
+    Lee un archivo CSV desde S3 y lo carga en un DataFrame de pandas.
+    """
+    try:
+        obj = s3_client.get_object(Bucket=bucket_name, Key=file_key)
+        return pd.read_csv(obj['Body'])
+    except Exception as e:
+        print(f"Error leyendo {file_key} de S3: {e}")
+        return pd.DataFrame()
+
+# Función para guardar un DataFrame en S3
+def save_to_s3(df, bucket_name, file_key):
+    """
+    Guarda un DataFrame como archivo CSV en S3.
+    """
+    try:
+        csv_buffer = StringIO()
+        df.to_csv(csv_buffer, index=False)
+        s3_client.put_object(Body=csv_buffer.getvalue(), Bucket=bucket_name, Key=file_key)
+        print(f"Archivo guardado en {bucket_name}/{file_key}")
+    except Exception as e:
+        print(f"Error guardando {file_key} en S3: {e}")
+
+# Función para filtrar los datos de ads_views
+def filter_ads_views(ads_views, advertiser_ids):
+    """
+    Filtra los datos de ads_views para incluir solo los advertisers activos en la fecha actual.
+    """
+    filtered_ads = ads_views[ads_views['advertiser_id'].isin(advertiser_ids['advertiser_id'])]
+    filtered_ads = filtered_ads[filtered_ads['date'] == datetime.today().strftime('%Y-%m-%d')]
+    return filtered_ads
+
+# Función para filtrar los datos de product_views
+def filter_product_views(product_views, advertiser_ids):
+    """
+    Filtra los datos de product_views para incluir solo los advertisers activos en la fecha actual.
+    """
+    filtered_products = product_views[product_views['advertiser_id'].isin(advertiser_ids['advertiser_id'])]
+    filtered_products = filtered_products[filtered_products['date'] == datetime.today().strftime('%Y-%m-%d')]
+    return filtered_products
+
+# Parámetros S3 y archivos
+bucket_name = 'grupo-17-mlops-bucket'
+ads_views_key = 'ads_views.csv'
+advertiser_ids_key = 'advertiser_ids.csv'
+product_views_key = 'product_views.csv'
+
+# Leer archivos desde S3
+ads_views = read_s3_csv(bucket_name, ads_views_key)
+advertiser_ids = read_s3_csv(bucket_name, advertiser_ids_key)
+product_views = read_s3_csv(bucket_name, product_views_key)
+
+# Verificar que los datos se cargaron correctamente
+if ads_views.empty or advertiser_ids.empty or product_views.empty:
+    print("Error al cargar todos los archivos.")
+else:
+    # Filtrar datos
+    ads_views_filtered = filter_ads_views(ads_views, advertiser_ids)
+    product_views_filtered = filter_product_views(product_views, advertiser_ids)
+
+    # Guardar datos filtrados en S3
+    save_to_s3(ads_views_filtered, bucket_name, 'Datos_filtrados/ads_views_filtered.csv')
+    save_to_s3(product_views_filtered, bucket_name, 'Datos_filtrados/product_views_filtered.csv')
+
+    print("Filtrado y guardado completado.")
