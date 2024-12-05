@@ -1,39 +1,12 @@
-
-import boto3
 import pandas as pd
 from datetime import datetime 
-from io import StringIO
+import os
 
-# Configurar la sesión de AWS 
-s3_client = boto3.client('s3', region_name='us-east-1')  
+# Función para leer archivos CSV
+def read_csv(file_path):
+    return pd.read_csv(file_path)
 
-# Función para leer archivos CSV desde S3
-def read_s3_csv(bucket_name, file_key):
-    obj = s3_client.get_object(Bucket=bucket_name, Key=file_key)
-    return pd.read_csv(obj['Body'])
-
-# Nombre del bucket y claves de los archivos CSV
-bucket_name = 'grupo-17-mlops-bucket'  # Nombre del bucket
-ads_views_key = 'ads_views.csv'  # Ruta del archivo en el bucket
-advertiser_ids_key = 'advertiser_ids.csv'  # Ruta del archivo en el bucket
-product_views_key = 'product_views.csv'  # Ruta del archivo en el bucket
-
-# Cargar los CSVs directamente desde S3
-ads_views = read_s3_csv(bucket_name, ads_views_key)
-advertiser_ids = read_s3_csv(bucket_name, advertiser_ids_key)
-product_views = read_s3_csv(bucket_name, product_views_key)
-
-# Mostrar las primeras filas de cada DataFrame para asegurarnos de que se cargaron correctamente
-print("ads_views:")
-print(ads_views.head())
-
-print("\nadvertiser_ids:")
-print(advertiser_ids.head())
-
-print("\nproduct_views:")
-print(product_views.head())
-
-#Definición de funciones para filtrar los datos
+# Definir funciones de filtrado
 def filter_ads_views(ads_views, advertiser_ids):
     df = ads_views[ads_views['advertiser_id'].isin(advertiser_ids)]
     df = df[df['date'] == datetime.today().strftime('%Y-%m-%d')]
@@ -45,29 +18,31 @@ def filter_product_views(product_views, advertiser_ids):
     df = df[df['date'] == datetime.today().strftime('%Y-%m-%d')]
     return df
 
+# Función para guardar los archivos filtrados en el sistema local de EC2
+def save_to_ec2(df, output_path):
+    # Asegurarse de que la carpeta existe
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    df.to_csv(output_path, index=False)
 
-# Filtrar los logs para que solo contengan advertisers activos
+# Nombre de los archivos de entrada
+ads_views_file = '/path/to/ads_views.csv'  # Cambia esta ruta a la correcta
+advertiser_ids_file = '/path/to/advertiser_ids.csv'  # Cambia esta ruta a la correcta
+product_views_file = '/path/to/product_views.csv'  # Cambia esta ruta a la correcta
+
+# Cargar los archivos CSV
+ads_views = read_csv(ads_views_file)
+advertiser_ids = read_csv(advertiser_ids_file)
+product_views = read_csv(product_views_file)
+
+# Filtrar los datos
 ads_views_filtered = filter_ads_views(ads_views, advertiser_ids)
 product_views_filtered = filter_product_views(product_views, advertiser_ids)
 
-# Guardar los resultados filtrados en S3 en una carpeta 'Datos filtrados/'
-output_ads_views_key = 'Datos filtrados/ads_views_filtered.csv'  # Ruta de salida en el bucket
-output_product_views_key = 'Datos filtrados/product_views_filtered.csv'  # Ruta de salida en el bucket
+# Guardar los resultados filtrados en el sistema de archivos local de EC2
+output_ads_views_path = '/home/ubuntu/Trabajo-Practico-MLOPS/Datos_filtrados/ads_views_filtered.csv'  # Cambia esta ruta si es necesario
+output_product_views_path = '/home/ubuntu/Trabajo-Practico-MLOPS/Datos_filtrados/product_views_filtered.csv'  # Cambia esta ruta si es necesario
 
-# Convertir los DataFrames filtrados a CSV en un objeto StringIO y luego cargar a S3
-csv_ads_views = StringIO()
-ads_views_filtered.to_csv(csv_ads_views, index=False)
-csv_ads_views.seek(0)  # Volver al principio del archivo en memoria
+save_to_ec2(ads_views_filtered, output_ads_views_path)
+save_to_ec2(product_views_filtered, output_product_views_path)
 
-csv_product_views = StringIO()
-product_views_filtered.to_csv(csv_product_views, index=False)
-csv_product_views.seek(0)  # Volver al principio del archivo en memoria
-
-# Subir los archivos filtrados de nuevo a S3
-s3_client.put_object(Body=csv_ads_views.getvalue(), Bucket=bucket_name, Key=output_ads_views_key)
-s3_client.put_object(Body=csv_product_views.getvalue(), Bucket=bucket_name, Key=output_product_views_key)
-
-print("Archivos filtrados guardados en S3.")
-
-
-
+print("Archivos filtrados guardados en EC2.")
