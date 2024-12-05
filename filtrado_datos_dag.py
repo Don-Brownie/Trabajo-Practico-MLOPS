@@ -7,7 +7,7 @@ import sys
 sys.path.append('/home/ubuntu/Trabajo-Practico-MLOPS')  # Cambia esta ruta si es diferente
 
 # Importar las funciones del script de filtrado
-from filtrado import filter_ads_views, filter_product_views, save_to_s3
+from filtrado_datos import filter_ads_views, filter_product_views, save_to_ec2
 
 default_args = {
     'owner': 'airflow',
@@ -23,17 +23,21 @@ with DAG(
 ) as dag:
 
     def ejecutar_filtrado():
-        from filtrado import ads_views, advertiser_ids, product_views  # Mueve esta importación dentro de la función
+        from filtrado_datos import ads_views, advertiser_ids, product_views  # Mueve esta importación dentro de la función
         ads_views_filtered = filter_ads_views(ads_views, advertiser_ids)
         product_views_filtered = filter_product_views(product_views, advertiser_ids)
 
-        # Guardar resultados en S3
-        bucket_name = 'grupo-17-mlops-bucket'
-        save_to_s3(ads_views_filtered, bucket_name, 'Datos_filtrados/ads_views_filtered.csv')
-        save_to_s3(product_views_filtered, bucket_name, 'Datos_filtrados/product_views_filtered.csv')
-        print("Filtrado completado y datos guardados en S3.")
+        # Guardar resultados en EC2
+        output_ads_views_path = '/home/ubuntu/Trabajo-Practico-MLOPS/Datos_filtrados/ads_views_filtered.csv'  # Cambia esta ruta si es necesario
+        output_product_views_path = '/home/ubuntu/Trabajo-Practico-MLOPS/Datos_filtrados/product_views_filtered.csv'  # Cambia esta ruta si es necesario
+
+        save_to_ec2(ads_views_filtered, output_ads_views_path)
+        save_to_ec2(product_views_filtered, output_product_views_path)
+
+        print("Filtrado completado y datos guardados en EC2.")
 
     tarea_filtrar_datos = PythonOperator(
         task_id='filtrar_datos_task',
         python_callable=ejecutar_filtrado,
     )
+
