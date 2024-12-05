@@ -26,7 +26,6 @@ def filter_product_views(product_views, advertiser_ids):
 
 # Función para guardar los archivos filtrados en el sistema local de EC2
 def save_to_ec2(df, output_path):
-    # Asegurarse de que la carpeta existe
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df.to_csv(output_path, index=False)
 
