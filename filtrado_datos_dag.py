@@ -3,8 +3,7 @@ from airflow.operators.python import PythonOperator  # Nota: este es el módulo 
 from datetime import datetime
 import sys
 
-# Asegurarse de que Airflow puede encontrar tu script
-sys.path.append('/home/ubuntu/Trabajo-Practico-MLOPS')  # Cambia esta ruta si es diferente
+sys.path.append('/home/ubuntu/Trabajo-Practico-MLOPS')  
 
 # Importar las funciones del script de filtrado
 from filtrado_datos import filter_ads_views, filter_product_views, save_to_ec2
@@ -23,13 +22,13 @@ with DAG(
 ) as dag:
 
     def ejecutar_filtrado():
-        from filtrado_datos import ads_views, advertiser_ids, product_views  # Mueve esta importación dentro de la función
+        from filtrado_datos import ads_views, advertiser_ids, product_views  
         ads_views_filtered = filter_ads_views(ads_views, advertiser_ids)
         product_views_filtered = filter_product_views(product_views, advertiser_ids)
 
         # Guardar resultados en EC2
-        output_ads_views_path = '/home/ubuntu/Trabajo-Practico-MLOPS/Datos_filtrados/ads_views_filtered.csv'  # Cambia esta ruta si es necesario
-        output_product_views_path = '/home/ubuntu/Trabajo-Practico-MLOPS/Datos_filtrados/product_views_filtered.csv'  # Cambia esta ruta si es necesario
+        output_ads_views_path = '/home/ubuntu/Trabajo-Practico-MLOPS/Datos_filtrados/ads_views_filtered.csv'  
+        output_product_views_path = '/home/ubuntu/Trabajo-Practico-MLOPS/Datos_filtrados/product_views_filtered.csv'  
 
         save_to_ec2(ads_views_filtered, output_ads_views_path)
         save_to_ec2(product_views_filtered, output_product_views_path)
