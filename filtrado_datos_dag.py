@@ -6,7 +6,7 @@ import sys
 sys.path.append('/home/ubuntu/Trabajo-Practico-MLOPS')  
 
 # Importar las funciones del script de filtrado
-from filtrado_datos import filter_ads_views, filter_product_views, save_to_ec2
+from Filtrado_datos import filter_ads_views, filter_product_views, save_to_ec2
 
 default_args = {
     'owner': 'airflow',
