@@ -2,6 +2,10 @@ _Este README explica como correr los procesos de hosteo. La máquina EC2 pullea 
 
 ## Instrucciones de uso
 
+Primero limpiar la instancia de la EC2
+
+`rm -rf -- * .[!.]*`
+
 El único código que se tiene que correr es el Launcher, el resto de los archivos están embebidos en el launcher y automaticamente se utilizan.
 
 #### Si la VM EC2 ha sido reiniciada o el repositorio de GitHub no esta hosteado correr lo siguiente
