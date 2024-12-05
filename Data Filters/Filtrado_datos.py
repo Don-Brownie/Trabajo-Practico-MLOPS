@@ -31,10 +31,10 @@ def save_to_ec2(df, output_path):
     df.to_csv(output_path, index=False)
 
 # Parámetros para los archivos S3
-bucket_name = 'grupo-17-mlops-bucket'  
-ads_views_key = 'ads_views.csv'  
-advertiser_ids_key = 'advertiser_ids.csv'  
-product_views_key = 'product_views.csv'  
+bucket_name = 'grupo-17-mlops-bucket'
+ads_views_key = 'ads_views.csv'
+advertiser_ids_key = 'advertiser_ids.csv'
+product_views_key = 'product_views.csv'
 
 # Cargar los archivos CSV desde S3
 ads_views = read_s3_csv(bucket_name, ads_views_key)
