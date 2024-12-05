@@ -24,10 +24,9 @@ def save_to_ec2(df, output_path):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df.to_csv(output_path, index=False)
 
-# Nombre de los archivos de entrada
-ads_views_file = '/path/to/ads_views.csv'  # Cambia esta ruta a la correcta
-advertiser_ids_file = '/path/to/advertiser_ids.csv'  # Cambia esta ruta a la correcta
-product_views_file = '/path/to/product_views.csv'  # Cambia esta ruta a la correcta
+ads_views_file = '/path/to/ads_views.csv'  
+advertiser_ids_file = '/path/to/advertiser_ids.csv'  
+product_views_file = '/path/to/product_views.csv'  
 
 # Cargar los archivos CSV
 ads_views = read_csv(ads_views_file)
@@ -39,8 +38,8 @@ ads_views_filtered = filter_ads_views(ads_views, advertiser_ids)
 product_views_filtered = filter_product_views(product_views, advertiser_ids)
 
 # Guardar los resultados filtrados en el sistema de archivos local de EC2
-output_ads_views_path = '/home/ubuntu/Trabajo-Practico-MLOPS/Datos_filtrados/ads_views_filtered.csv'  # Cambia esta ruta si es necesario
-output_product_views_path = '/home/ubuntu/Trabajo-Practico-MLOPS/Datos_filtrados/product_views_filtered.csv'  # Cambia esta ruta si es necesario
+output_ads_views_path = '/home/ubuntu/Trabajo-Practico-MLOPS/Datos_filtrados/ads_views_filtered.csv'  
+output_product_views_path = '/home/ubuntu/Trabajo-Practico-MLOPS/Datos_filtrados/product_views_filtered.csv'  
 
 save_to_ec2(ads_views_filtered, output_ads_views_path)
 save_to_ec2(product_views_filtered, output_product_views_path)
