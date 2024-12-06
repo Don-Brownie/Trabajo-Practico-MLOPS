@@ -1,15 +1,17 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
-import Filtrado_datos.py
-import Top_CTR.py
-import Top_Product.py
-import DBWriting.py
 import sys
 from pathlib import Path
 
-#Path para carpeta de Data Filters
+# Path para carpeta de Data Filters
 sys.path.append(str(Path(__file__).resolve().parent.parent / "Data Filters"))
+
+# Importar las funciones de los scripts
+from Filtrado_datos import run_filtrado
+from Top_CTR import run_top_ctr
+from Top_Product import run_top_product
+from DBWriting import run_db_writing
 
 # Configuración del DAG
 default_args = {
@@ -20,6 +22,7 @@ default_args = {
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
 }
+
 with DAG(
     dag_id='pipeline_recomendaciones',
     default_args=default_args,
@@ -31,7 +34,7 @@ with DAG(
     
     # Tarea 1: Filtrar datos
     def filtrar_datos():
-        Filtrado_datos.run_filtrado()
+        run_filtrado()
 
     tarea_filtrar = PythonOperator(
         task_id='filtrar_datos',
@@ -40,7 +43,7 @@ with DAG(
 
     # Tarea 2: Computar TopCTR
     def computar_top_ctr():
-        TopCTR.run_top_ctr()
+        run_top_ctr()
 
     tarea_top_ctr = PythonOperator(
         task_id='computar_top_ctr',
@@ -49,16 +52,16 @@ with DAG(
 
     # Tarea 3: Computar TopProduct
     def computar_top_product():
-        TopProduct.run_top_product()
+        run_top_product()
 
     tarea_top_product = PythonOperator(
         task_id='computar_top_product',
         python_callable=computar_top_product,
     )
 
-     Tarea 4: Escribir en la base de datos
+    # Tarea 4: Escribir en la base de datos
     def escribir_db():
-        DBWriting.run_db_writing()
+        run_db_writing()
 
     tarea_db_writing = PythonOperator(
         task_id='escribir_db',
