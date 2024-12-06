@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import Filtrado_datos.py
 import Top_CTR.py
 import Top_Product.py
-#import DBWriting
+import DBWriting.py
 import sys
 from pathlib import Path
 
@@ -56,14 +56,14 @@ with DAG(
         python_callable=computar_top_product,
     )
 
-    # Tarea 4: Escribir en la base de datos
-    #def escribir_db():
-        #DBWriting.run_db_writing()
+     Tarea 4: Escribir en la base de datos
+    def escribir_db():
+        DBWriting.run_db_writing()
 
-    #tarea_db_writing = PythonOperator(
-        #task_id='escribir_db',
-        #python_callable=escribir_db,
-    #)
+    tarea_db_writing = PythonOperator(
+        task_id='escribir_db',
+        python_callable=escribir_db,
+    )
 
     # Configurar dependencias
-    tarea_filtrar >> [tarea_top_ctr, tarea_top_product] #>> tarea_db_writing
+    tarea_filtrar >> [tarea_top_ctr, tarea_top_product] >> tarea_db_writing
