@@ -22,4 +22,4 @@ chmod +x airflow_config.sh
 
 ./airflow_config.sh
 
-#airflow webserver --port 8080 & airflow scheduler &
+airflow webserver --port 8080 & airflow scheduler &
