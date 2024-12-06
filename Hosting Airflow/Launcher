@@ -18,7 +18,7 @@ chmod +x airflow_admin_user.sh
 
 mkdir -p ~/airflow/dags
 
-mv /home/ubuntu/Trabajo-Practico-MLOPS/Hosting\ Airflow/DAGs*.py ~/airflow/dags/
+cd "Trabajo-Practico-MLOPS/Hosting Airflow" && mv DAGs/*.py ~/airflow/dags/
 
 chmod +x airflow_config.sh
 
