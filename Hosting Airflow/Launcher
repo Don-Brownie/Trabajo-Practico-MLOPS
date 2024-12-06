@@ -18,4 +18,8 @@ chmod +x airflow_admin_user.sh
 
 mkdir -p ~/airflow/dags
 
+chmod +x airflow_config.sh
+
+./airflow_config.sh
+
 #airflow webserver --port 8080 & airflow scheduler &
