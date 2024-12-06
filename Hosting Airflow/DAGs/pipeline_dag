@@ -5,6 +5,11 @@ import Filtrado_datos.py
 import Top_CTR.py
 import Top_Product.py
 #import DBWriting
+import sys
+from pathlib import Path
+
+#Path para carpeta de Data Filters
+sys.path.append(str(Path(__file__).resolve().parent.parent / "Data Filters"))
 
 # Configuración del DAG
 default_args = {
