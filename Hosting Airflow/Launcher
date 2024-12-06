@@ -18,10 +18,13 @@ chmod +x airflow_admin_user.sh
 
 mkdir -p ~/airflow/dags
 
- cd "Trabajo-Practico-MLOPS/Hosting Airflow" && mv DAGs/*.py ~/airflow/dags/
 
 chmod +x airflow_config.sh
 
 ./airflow_config.sh
+
+cd
+
+cd "Trabajo-Practico-MLOPS/Hosting Airflow" && mv DAGs/*.py ~/airflow/dags/
 
 airflow webserver --port 8080 & airflow scheduler &
