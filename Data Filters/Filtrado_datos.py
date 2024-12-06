@@ -51,5 +51,26 @@ output_product_views_path = '/home/ubuntu/Trabajo-Practico-MLOPS/Datos_filtrados
 save_to_ec2(ads_views_filtered, output_ads_views_path)
 save_to_ec2(product_views_filtered, output_product_views_path)
 
+def run_filtrado():
+    # Configurar S3 y parámetros
+    bucket_name = 'grupo-17-mlops-bucket'
+    ads_views_key = 'ads_views.csv'
+    advertiser_ids_key = 'advertiser_ids.csv'
+    product_views_key = 'product_views.csv'
+
+    # Leer datos de S3
+    ads_views = read_s3_csv(bucket_name, ads_views_key)
+    advertiser_ids = read_s3_csv(bucket_name, advertiser_ids_key)
+    product_views = read_s3_csv(bucket_name, product_views_key)
+
+    # Filtrar datos
+    filtered_ads = filter_ads_views(ads_views, advertiser_ids)
+    filtered_products = filter_product_views(product_views, advertiser_ids)
+
+    # Guardar resultados en EC2
+    save_to_ec2(filtered_ads, '/tmp/filtered_ads.csv')
+    save_to_ec2(filtered_products, '/tmp/filtered_products.csv')
+
+
 print("Archivos filtrados guardados en EC2.")
 
