@@ -18,7 +18,7 @@ chmod +x airflow_admin_user.sh
 
 mkdir -p ~/airflow/dags
 
-mv /path/to/current/folder/*.py /path/to/new/folder/
+mv /home/ubuntu/Trabajo-Practico-MLOPS/Hosting Airlfow/DAGs*.py /path/to/new/folder/
 
 chmod +x airflow_config.sh
 
