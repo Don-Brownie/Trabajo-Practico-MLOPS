@@ -24,3 +24,17 @@ def calcular_top_product(product_views, top_n=20):
     )
 
     return top_product[['advertiser_id', 'product_id', 'views']]
+
+
+def run_top_product():
+    # Leer datos filtrados desde EC2
+    filtered_products = pd.read_csv('/tmp/filtered_products.csv')
+    top_products = (
+        filtered_products.groupby(['advertiser_id', 'product_id'])
+        .size()
+        .reset_index(name='view_count')
+        .sort_values(by='view_count', ascending=False)
+        .groupby('advertiser_id')
+        .head(20)
+    )
+    save_to_ec2(top_products, '/tmp/top_products.csv')
