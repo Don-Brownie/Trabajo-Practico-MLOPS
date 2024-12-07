@@ -1,0 +1,7 @@
+fastapi==0.95.0           # Framework para la API
+uvicorn==0.22.0           # ASGI server para ejecutar FastAPI
+sqlalchemy==2.0.19        # ORM para interactuar con PostgreSQL
+psycopg2-binary==2.9.6    # Controlador para PostgreSQL
+pandas==2.1.1             # Para manipulación de datos
+boto3==1.28.36            # Para interactuar con AWS S3
+python-dotenv==1.0.0      # Para manejar variables de entorno
