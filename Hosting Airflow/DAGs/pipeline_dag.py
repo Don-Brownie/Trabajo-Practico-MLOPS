@@ -1,13 +1,13 @@
-from airflow import DAG
+from airflow import DAG 
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 import sys
 from pathlib import Path
 
-# Path para carpeta de Data Filters
-sys.path.append(str(Path(__file__).resolve().parent.parent / "Data Filters"))
+# Path para carpeta actual donde está el archivo pipeline_dag.py
+sys.path.append(str(Path(__file__).resolve().parent))
 
-# Importar las funciones de los scripts
+# Importar las funciones de los scripts en la misma carpeta
 from Filtrado_datos import run_filtrado
 from Top_CTR import run_top_ctr
 from Top_Product import run_top_product
