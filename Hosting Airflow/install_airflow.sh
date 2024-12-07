@@ -34,7 +34,10 @@ pip install "apache-airflow==${AIRFLOW_VERSION}" --constraint "${CONSTRAINT_URL}
 # Step 9: Verify Airflow installation
 airflow version
 
-# Step 10: Deactivate virtual environment
+#Step 10: Install packages
+pip install apache-airflow apache-airflow-providers-amazon pandas psycopg2-binary
+
+# Step 11: Deactivate virtual environment
 deactivate
 
 echo "Apache Airflow has been successfully installed!"
