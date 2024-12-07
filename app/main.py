@@ -1,8 +1,7 @@
 from fastapi import FastAPI, HTTPException
-from models.recommendations import get_recommendations
-from models.stats import get_stats
-from models.history import get_history
-
+from app.models.recommendations import get_recommendations
+from app.models.history import get_history
+from app.models.stats import get_stats
 app = FastAPI()
 
 @app.get("/recommendations/{adv}/{model}")
