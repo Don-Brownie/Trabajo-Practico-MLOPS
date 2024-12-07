@@ -141,7 +141,7 @@ default_args = {
 
 # Definición del DAG
 with DAG(
-    'grupo17_v2',
+    'grupo17',
     default_args=default_args,
     description='Pipeline de procesamiento de datos y escritura en PostgreSQL',
     schedule_interval='@daily',
@@ -150,7 +150,7 @@ with DAG(
 ) as dag:
 
     filter_task = PythonOperator(
-        task_id='filter_active_advertisers',
+        task_id='filter_datasets',
         python_callable=filter_datasets
     )
 
