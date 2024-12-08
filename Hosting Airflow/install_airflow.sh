@@ -36,6 +36,7 @@ airflow version
 
 #Step 10: Install packages
 pip install apache-airflow apache-airflow-providers-amazon pandas psycopg2-binary
+pip install connexion[swagger-ui]
 
 # Step 11: Deactivate virtual environment
 deactivate
