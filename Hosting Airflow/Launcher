@@ -27,4 +27,4 @@ cd
 
 cd "Trabajo-Practico-MLOPS/Hosting Airflow" && mv DAGs/*.py ~/airflow/dags/
 
-airflow webserver --port 8080 & airflow scheduler &
+#airflow webserver --port 8080 & airflow scheduler &
