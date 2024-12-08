@@ -17,7 +17,7 @@ curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
 pip --version
 
 # Step 5: Set Airflow version and Python version
-AIRFLOW_VERSION=2.8.4
+AIRFLOW_VERSION=2.10.3
 PYTHON_VERSION=3.10
 CONSTRAINT_URL="https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-${PYTHON_VERSION}.txt"
 
