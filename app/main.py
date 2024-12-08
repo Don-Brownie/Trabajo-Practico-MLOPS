@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from models.recommendations import get_recommendations
-from models.history import get_history
-from models.stats import get_stats
+from app.models.recommendations import get_recommendations
+from app.models.history import get_history
+from app.models.stats import get_stats
 
 app = FastAPI()
 
