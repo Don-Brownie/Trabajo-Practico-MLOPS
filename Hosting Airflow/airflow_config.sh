@@ -1,4 +1,4 @@
-# Define the path to your airflow.cfg file
+# Define la ruta a tu archivo airflow.cfg
 AIRFLOW_CFG_PATH="$HOME/airflow/airflow.cfg"
 
 # Cambia la conexión a la base de datos de SQLite (por defecto) a PostgreSQL en RDS
@@ -22,5 +22,8 @@ sed -i 's/^workers = 4/workers = 1/' "$AIRFLOW_CFG_PATH"
 
 # Disables variable interpolation in the airflow.cfg file
 sed -i '/\[core\]/,/^\[/{/interpolate/ s/.*/interpolate = false/}' "$AIRFLOW_CFG_PATH"
+
+# Agregar la configuración de flask_limiter
+echo -e "\n[flask_limiter]\nstorage = sqlalchemy" >> "$AIRFLOW_CFG_PATH"
 
 echo "Airflow configuration updated successfully!"
