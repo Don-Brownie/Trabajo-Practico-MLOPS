@@ -4,9 +4,6 @@ AIRFLOW_CFG_PATH="$HOME/airflow/airflow.cfg"
 # Cambia la conexión a la base de datos de SQLite (por defecto) a PostgreSQL en RDS
 sed -i 's|^sql_alchemy_conn = sqlite:///.*|sql_alchemy_conn = postgresql+psycopg2://postgres:yourpassword123@grupo-17-rds.cf4i6e6cwv74.us-east-1.rds.amazonaws.com|' "$AIRFLOW_CFG_PATH"
 
-# Establece la variable de entorno para habilitar el pool de conexiones
-export AIRFLOW__CORE__SQL_ALCHEMY_POOL_ENABLED=True
-
 # Cambia el executor a LocalExecutor
 sed -i 's/^executor = SequentialExecutor/executor = LocalExecutor/' "$AIRFLOW_CFG_PATH"
 
