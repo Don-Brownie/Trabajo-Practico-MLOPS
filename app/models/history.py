@@ -1,4 +1,4 @@
-from database.connection import get_db_connection
+from app.database.connection import get_db_connection
 
 def get_history(adv):
     conn = get_db_connection()

@@ -1,4 +1,4 @@
-from database.connection import get_connection
+from app.database.connection import get_connection
 
 async def get_recommendations(adv: str, model: str):
     """
