@@ -2,7 +2,7 @@
 AIRFLOW_CFG_PATH="$HOME/airflow/airflow.cfg"
 
 # Cambia la conexión a la base de datos de SQLite (por defecto) a PostgreSQL en RDS
-sed -i 's|postgresql+psycopg2://grupo-17-rds:h$vEy0)$@|postgresql+psycopg2://grupo-17-rds:h%24vEy0%29%24%40|' "$AIRFLOW_CFG_PATH"
+sed -i 's|postgresql+psycopg2://grupo-17-rds:yourpassword123)$@|postgresql+psycopg2://grupo-17-rds:yourpassword123|' "$AIRFLOW_CFG_PATH"
 
 # Cambia el executor a LocalExecutor
 sed -i 's/^executor = SequentialExecutor/executor = LocalExecutor/' "$AIRFLOW_CFG_PATH"
