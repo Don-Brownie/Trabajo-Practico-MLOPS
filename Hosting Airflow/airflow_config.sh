@@ -17,7 +17,7 @@ sed -i 's/^load_examples = True/load_examples = False/' "$AIRFLOW_CFG_PATH"
 sed -i 's/^workers = 4/workers = 1/' "$AIRFLOW_CFG_PATH"
 
 # Disables variable interpolation in the airflow.cfg file
-sed -i '/\[core\]/a interpolate = false' "$AIRFLOW_CFG_PATH"
+sed -i '/\[core\]/,/^\[/{/interpolate/ s/.*/interpolate = false/}' "$AIRFLOW_CFG_PATH"
 
 echo "Airflow configuration updated successfully!"
 
