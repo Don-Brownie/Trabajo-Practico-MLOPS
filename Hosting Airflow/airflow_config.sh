@@ -16,5 +16,8 @@ sed -i 's/^load_examples = True/load_examples = False/' "$AIRFLOW_CFG_PATH"
 # (Opcional) Configura los workers del webserver a 1 para reducir el consumo de recursos
 sed -i 's/^workers = 4/workers = 1/' "$AIRFLOW_CFG_PATH"
 
+# Disables variable interpolation in the airflow.cfg file
+sed -i '/\[core\]/a interpolate = false' "$AIRFLOW_CFG_PATH"
+
 echo "Airflow configuration updated successfully!"
 
