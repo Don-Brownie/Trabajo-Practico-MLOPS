@@ -10,7 +10,7 @@ source airflow_env/bin/activate
 export AIRFLOW_HOME=~/airflow
 
 
-airflow db init
+airflow db migrate
 
 chmod +x airflow_admin_user.sh
 
