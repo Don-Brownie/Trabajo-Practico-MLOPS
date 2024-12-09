@@ -96,7 +96,7 @@ def calculate_top_product(**kwargs):
 # Función para escribir en PostgreSQL
 def write_to_postgres(**kwargs):
     print("Iniciando tarea: Escribir en PostgreSQL")
-    download_path = os.path.expanduser('~/tmp')
+    download_path = '/tmp'
     db_config = {
         'dbname': 'postgres',
         'user': 'postgres',
