@@ -5,6 +5,11 @@ from app.models.stats import get_stats
 
 app = FastAPI()
 
+
+@app.get("/")
+def read_root():
+    return {"message": "API funcionando correctamente"}
+
 @app.get("/recommendations/{adv}/{model}")
 async def recommendations(adv: str, model: str):
     return await get_recommendations(adv, model)
