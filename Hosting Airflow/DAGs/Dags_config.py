@@ -17,8 +17,9 @@ def read_s3_csv(bucket_name, file_key):
 
 # Definir funciones de filtrado
 def filter_ads_views(ads_views, advertiser_ids):
-    df = ads_views[ads_views['advertiser_id'].isin(advertiser_ids)]
-    df = df[df['date'] == datetime.today().strftime('%Y-%m-%d')]
+    ads_views['date'] = pd.to_datetime(ads_views['date']).dt.date
+    df = ads_views[ads_views['advertiser_id'].isin(advertiser_ids['advertiser_id'])]
+    df = df[df['date'] == datetime.today().date()]
     return df
 
 def filter_product_views(product_views, advertiser_ids):
