@@ -221,4 +221,4 @@ with DAG(
         python_callable=write_to_postgres
     )
 
-    filter_task >> [top_ctr_task, top_product_task] >> db_writing_task
+    [filter_ads_views_task, filter_product_views_task] >> [top_ctr_task, top_product_task] >> db_writing_task
