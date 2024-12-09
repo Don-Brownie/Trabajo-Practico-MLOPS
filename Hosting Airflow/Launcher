@@ -12,10 +12,6 @@ export AIRFLOW_HOME=~/airflow
 
 airflow db migrate
 
-chmod +x airflow_admin_user.sh
-
-./airflow_admin_user.sh
-
 mkdir -p ~/airflow/dags
 
 
@@ -28,5 +24,9 @@ cd
 cd "Trabajo-Practico-MLOPS/Hosting Airflow" && mv DAGs/*.py ~/airflow/dags/
 
 pkill -f airflow
+
+chmod +x airflow_admin_user.sh
+
+./airflow_admin_user.sh
 
 airflow webserver --port 8080 & airflow scheduler &
