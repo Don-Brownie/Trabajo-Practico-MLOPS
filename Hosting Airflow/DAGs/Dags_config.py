@@ -58,7 +58,7 @@ def run_filtrado():
 def calculate_top_ctr(**kwargs):
     print("Iniciando tarea: Calcular TopCTR")
     download_path = os.path.expanduser('~/airflow/tmp')
-    ads_views = pd.read_csv(os.path.join(download_path, 'ads_views_filtered.csv'))
+    ads_views = pd.read_csv(os.path.join(download_path, 'filtered_ads.csv'))
 
     # Calcular métricas
     clicks = ads_views[ads_views['type'] == 'click'].groupby(['advertiser_id', 'product_id']).size().reset_index(name='clicks')
@@ -80,7 +80,7 @@ def calculate_top_ctr(**kwargs):
 def calculate_top_product(**kwargs):
     print("Iniciando tarea: Calcular TopProduct")
     download_path = os.path.expanduser('~/airflow/tmp')
-    product_views = pd.read_csv(os.path.join(download_path, 'product_views_filtered.csv'))
+    product_views = pd.read_csv(os.path.join(download_path, 'filtered_products.csv'))
 
     # Calcular productos más vistos
     top_product = product_views.groupby(['advertiser_id', 'product_id']).size().reset_index(name='views')
