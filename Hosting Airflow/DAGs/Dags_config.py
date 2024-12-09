@@ -6,17 +6,12 @@ import os
 from pathlib import Path
 import pandas as pd
 import psycopg2
-
-# Función para filtrar datasets
 import boto3
 from io import StringIO
 
-# Funciones para filtrar datasets
-# Configurar el cliente de S3
-s3_client = boto3.client('s3', region_name='us-east-1')
-
 # Función para leer archivos CSV desde S3
 def read_s3_csv(bucket_name, file_key):
+    s3_client = boto3.client('s3', region_name='us-east-1')
     obj = s3_client.get_object(Bucket=bucket_name, Key=file_key)
     return pd.read_csv(obj['Body'])
 
@@ -37,28 +32,6 @@ def save_to_ec2(df, output_path):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df.to_csv(output_path, index=False)
 
-# Parámetros para los archivos S3
-bucket_name = 'grupo-17-mlops-bucket'
-ads_views_key = 'ads_views.csv'
-advertiser_ids_key = 'advertiser_ids.csv'
-product_views_key = 'product_views.csv'
-
-# Cargar los archivos CSV desde S3
-ads_views = read_s3_csv(bucket_name, ads_views_key)
-advertiser_ids = read_s3_csv(bucket_name, advertiser_ids_key)
-product_views = read_s3_csv(bucket_name, product_views_key)
-
-# Filtrar los datos
-ads_views_filtered = filter_ads_views(ads_views, advertiser_ids)
-product_views_filtered = filter_product_views(product_views, advertiser_ids)
-
-# Guardar los resultados filtrados en el sistema de archivos local de EC2
-output_ads_views_path = '/home/ubuntu/Trabajo-Practico-MLOPS/Datos_filtrados/ads_views_filtered.csv'
-output_product_views_path = '/home/ubuntu/Trabajo-Practico-MLOPS/Datos_filtrados/product_views_filtered.csv'
-
-save_to_ec2(ads_views_filtered, output_ads_views_path)
-save_to_ec2(product_views_filtered, output_product_views_path)
-
 def run_filtrado():
     # Configurar S3 y parámetros
     bucket_name = 'grupo-17-mlops-bucket'
@@ -78,9 +51,8 @@ def run_filtrado():
     # Guardar resultados en EC2
     save_to_ec2(filtered_ads, '/tmp/filtered_ads.csv')
     save_to_ec2(filtered_products, '/tmp/filtered_products.csv')
-
-
-print("Archivos filtrados guardados en EC2.")
+    
+    print("Archivos filtrados guardados en EC2.")
 
 # Función para calcular TopCTR
 def calculate_top_ctr(**kwargs):
@@ -196,14 +168,9 @@ with DAG(
     catchup=False,
 ) as dag:
 
-    filter_ads_views_task = PythonOperator(
-        task_id='filter_ads_views',
-        python_callable=lambda: save_to_ec2(filter_ads_views(ads_views, advertiser_ids), '/tmp/ads_views_filtered.csv')
-    )
-
-    filter_product_views_task = PythonOperator(
-        task_id='filter_product_views',
-        python_callable=lambda: save_to_ec2(filter_product_views(product_views, advertiser_ids), '/tmp/product_views_filtered.csv')
+    filter_task = PythonOperator(
+        task_id='filter_active_advertisers',
+        python_callable=run_filtrado
     )
 
     top_ctr_task = PythonOperator(
@@ -221,9 +188,4 @@ with DAG(
         python_callable=write_to_postgres
     )
 
-    # Conectar las primeras tareas a las siguientes
-    for task in [filter_ads_views_task, filter_product_views_task]:
-        task >> [top_ctr_task, top_product_task]
-
-    # Conectar las tareas finales a la última tarea
-    [top_ctr_task, top_product_task] >> db_writing_task
+    filter_task >> [top_ctr_task, top_product_task] >> db_writing_task
