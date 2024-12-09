@@ -99,8 +99,8 @@ def write_to_postgres(**kwargs):
     download_path = os.path.expanduser('~/airflow/tmp')
     db_config = {
         'dbname': 'postgres',
-        'user': 'grupo-17-rds',
-        'password': 'h$vEy0)$',
+        'user': 'postgres',
+        'password': 'yourpassword123',
         'host': 'grupo-17-rds.cf4i6e6cwv74.us-east-1.rds.amazonaws.com',
         'port': 5432,
     }
