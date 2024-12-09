@@ -191,7 +191,7 @@ with DAG(
     'grupo17',
     default_args=default_args,
     description='Pipeline de procesamiento de datos y escritura en PostgreSQL',
-    schedule_interval='@daily',
+    schedule='@daily',
     start_date=datetime(2024, 12, 7),
     catchup=False,
 ) as dag:
