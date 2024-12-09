@@ -79,7 +79,7 @@ def calculate_top_ctr(**kwargs):
 # Función para calcular TopProduct
 def calculate_top_product(**kwargs):
     print("Iniciando tarea: Calcular TopProduct")
-    download_path = os.path.expanduser('~/tmp')
+    download_path = '/tmp'
     product_views = pd.read_csv(os.path.join(download_path, 'filtered_products.csv'))
 
     # Calcular productos más vistos
