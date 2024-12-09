@@ -8,32 +8,79 @@ import pandas as pd
 import psycopg2
 
 # Función para filtrar datasets
-def filter_datasets(**kwargs):
-    print("Iniciando tarea: Filtrar datasets")
-    s3_hook = S3Hook(aws_conn_id='aws_default')
-    bucket_name = 'grupo-17-mlops-bucket'
-    download_path = os.path.expanduser('~/airflow/tmp')
-    Path(download_path).mkdir(parents=True, exist_ok=True)
+import boto3
+from io import StringIO
 
-    # Cargar archivos
-    advertiser_ids = pd.read_csv(os.path.join(download_path, 'advertiser_ids.csv'))
-    ads_views = pd.read_csv(os.path.join(download_path, 'ads_views.csv'))
-    product_views = pd.read_csv(os.path.join(download_path, 'product_views.csv'))
+# Funciones para filtrar datasets
+# Configurar el cliente de S3
+s3_client = boto3.client('s3', region_name='us-east-1')
+
+# Función para leer archivos CSV desde S3
+def read_s3_csv(bucket_name, file_key):
+    obj = s3_client.get_object(Bucket=bucket_name, Key=file_key)
+    return pd.read_csv(obj['Body'])
+
+# Definir funciones de filtrado
+def filter_ads_views(ads_views, advertiser_ids):
+    df = ads_views[ads_views['advertiser_id'].isin(advertiser_ids)]
+    df = df[df['date'] == datetime.today().strftime('%Y-%m-%d')]
+    return df
+
+def filter_product_views(product_views, advertiser_ids):
+    advertisers = advertiser_ids['advertiser_id'].tolist()
+    df = product_views[product_views['advertiser_id'].isin(advertisers)]
+    df = df[df['date'] == datetime.today().strftime('%Y-%m-%d')]
+    return df
+
+# Función para guardar los archivos filtrados en el sistema local de EC2
+def save_to_ec2(df, output_path):
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    df.to_csv(output_path, index=False)
+
+# Parámetros para los archivos S3
+bucket_name = 'grupo-17-mlops-bucket'
+ads_views_key = 'ads_views.csv'
+advertiser_ids_key = 'advertiser_ids.csv'
+product_views_key = 'product_views.csv'
+
+# Cargar los archivos CSV desde S3
+ads_views = read_s3_csv(bucket_name, ads_views_key)
+advertiser_ids = read_s3_csv(bucket_name, advertiser_ids_key)
+product_views = read_s3_csv(bucket_name, product_views_key)
+
+# Filtrar los datos
+ads_views_filtered = filter_ads_views(ads_views, advertiser_ids)
+product_views_filtered = filter_product_views(product_views, advertiser_ids)
+
+# Guardar los resultados filtrados en el sistema de archivos local de EC2
+output_ads_views_path = '/home/ubuntu/Trabajo-Practico-MLOPS/Datos_filtrados/ads_views_filtered.csv'
+output_product_views_path = '/home/ubuntu/Trabajo-Practico-MLOPS/Datos_filtrados/product_views_filtered.csv'
+
+save_to_ec2(ads_views_filtered, output_ads_views_path)
+save_to_ec2(product_views_filtered, output_product_views_path)
+
+def run_filtrado():
+    # Configurar S3 y parámetros
+    bucket_name = 'grupo-17-mlops-bucket'
+    ads_views_key = 'ads_views.csv'
+    advertiser_ids_key = 'advertiser_ids.csv'
+    product_views_key = 'product_views.csv'
+
+    # Leer datos de S3
+    ads_views = read_s3_csv(bucket_name, ads_views_key)
+    advertiser_ids = read_s3_csv(bucket_name, advertiser_ids_key)
+    product_views = read_s3_csv(bucket_name, product_views_key)
 
     # Filtrar datos
-    advertisers = advertiser_ids['advertiser_id'].tolist()
-    ads_filtered = ads_views[ads_views['advertiser_id'].isin(advertisers)]
-    products_filtered = product_views[product_views['advertiser_id'].isin(advertisers)]
+    filtered_ads = filter_ads_views(ads_views, advertiser_ids)
+    filtered_products = filter_product_views(product_views, advertiser_ids)
 
-    # Filtrar por fecha actual
-    today = datetime.today().strftime('%Y-%m-%d')
-    ads_filtered = ads_filtered[ads_filtered['date'] == today]
-    products_filtered = products_filtered[products_filtered['date'] == today]
+    # Guardar resultados en EC2
+    save_to_ec2(filtered_ads, '/tmp/filtered_ads.csv')
+    save_to_ec2(filtered_products, '/tmp/filtered_products.csv')
 
-    # Guardar resultados
-    ads_filtered.to_csv(os.path.join(download_path, 'ads_views_filtered.csv'), index=False)
-    products_filtered.to_csv(os.path.join(download_path, 'product_views_filtered.csv'), index=False)
-    print("Tarea finalizada correctamente")
+
+print("Archivos filtrados guardados en EC2.")
 
 # Función para calcular TopCTR
 def calculate_top_ctr(**kwargs):
@@ -144,14 +191,19 @@ with DAG(
     'grupo17',
     default_args=default_args,
     description='Pipeline de procesamiento de datos y escritura en PostgreSQL',
-    schedule_interval='@daily',
+    schedule='@daily',
     start_date=datetime(2024, 12, 7),
     catchup=False,
 ) as dag:
 
-    filter_task = PythonOperator(
-        task_id='filter_datasets',
-        python_callable=filter_datasets
+    filter_ads_views_task = PythonOperator(
+        task_id='filter_ads_views',
+        python_callable=lambda: save_to_ec2(filter_ads_views(ads_views, advertiser_ids), '/tmp/ads_views_filtered.csv')
+    )
+
+    filter_product_views_task = PythonOperator(
+        task_id='filter_product_views',
+        python_callable=lambda: save_to_ec2(filter_product_views(product_views, advertiser_ids), '/tmp/product_views_filtered.csv')
     )
 
     top_ctr_task = PythonOperator(
@@ -169,4 +221,9 @@ with DAG(
         python_callable=write_to_postgres
     )
 
-    filter_task >> [top_ctr_task, top_product_task] >> db_writing_task
+    # Conectar las primeras tareas a las siguientes
+    for task in [filter_ads_views_task, filter_product_views_task]:
+        task >> [top_ctr_task, top_product_task]
+
+    # Conectar las tareas finales a la última tarea
+    [top_ctr_task, top_product_task] >> db_writing_task
