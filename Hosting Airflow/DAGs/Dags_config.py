@@ -57,7 +57,7 @@ def run_filtrado():
 # Función para calcular TopCTR
 def calculate_top_ctr(**kwargs):
     print("Iniciando tarea: Calcular TopCTR")
-    download_path = os.path.expanduser('~/airflow/tmp')
+    download_path = os.path.expanduser('~/tmp')
     ads_views = pd.read_csv(os.path.join(download_path, 'filtered_ads.csv'))
 
     # Calcular métricas
@@ -79,7 +79,7 @@ def calculate_top_ctr(**kwargs):
 # Función para calcular TopProduct
 def calculate_top_product(**kwargs):
     print("Iniciando tarea: Calcular TopProduct")
-    download_path = os.path.expanduser('~/airflow/tmp')
+    download_path = os.path.expanduser('~/tmp')
     product_views = pd.read_csv(os.path.join(download_path, 'filtered_products.csv'))
 
     # Calcular productos más vistos
@@ -96,7 +96,7 @@ def calculate_top_product(**kwargs):
 # Función para escribir en PostgreSQL
 def write_to_postgres(**kwargs):
     print("Iniciando tarea: Escribir en PostgreSQL")
-    download_path = os.path.expanduser('~/airflow/tmp')
+    download_path = os.path.expanduser('~/tmp')
     db_config = {
         'dbname': 'postgres',
         'user': 'postgres',
