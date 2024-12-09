@@ -9,21 +9,34 @@ async def get_stats():
     """
     stats = {}
     queries = {
-        "total_advertisers": "SELECT COUNT(DISTINCT advertiser_id) FROM recommendations",
+        # Total de advertisers únicos en ambas tablas
+        "total_advertisers": """
+            SELECT COUNT(DISTINCT advertiser_id) 
+            FROM (
+                SELECT advertiser_id FROM top_ctr
+                UNION
+                SELECT advertiser_id FROM top_product
+            ) AS combined_advertisers
+        """,
+        # Advertiser con más recomendaciones variables por día
         "most_variable_advertisers": """
             SELECT advertiser_id, COUNT(DISTINCT date)
-            FROM recommendations
+            FROM (
+                SELECT advertiser_id, date FROM top_ctr
+                UNION ALL
+                SELECT advertiser_id, date FROM top_product
+            ) AS combined_recommendations
             GROUP BY advertiser_id
             ORDER BY COUNT(DISTINCT date) DESC
             LIMIT 1
         """,
+        # Coincidencias entre recomendaciones de ambos modelos por advertiser
         "model_agreement": """
-            SELECT advertiser_id, COUNT(*)
-            FROM recommendations AS r1
-            INNER JOIN recommendations AS r2
-            ON r1.advertiser_id = r2.advertiser_id AND r1.date = r2.date AND r1.product_id = r2.product_id
-            WHERE r1.model = 'model_1' AND r2.model = 'model_2'
-            GROUP BY advertiser_id
+            SELECT t1.advertiser_id, COUNT(*)
+            FROM top_ctr AS t1
+            INNER JOIN top_product AS t2
+            ON t1.product_id = t2.product_id AND t1.advertiser_id = t2.advertiser_id AND t1.date = t2.date
+            GROUP BY t1.advertiser_id
             ORDER BY COUNT(*) DESC
         """
     }
@@ -36,15 +49,20 @@ async def get_stats():
         cursor.execute(queries["total_advertisers"])
         stats["total_advertisers"] = cursor.fetchone()[0]
 
-        # Advertiser with most variable recommendations
+        # Advertiser con más variaciones diarias en sus recomendaciones
         cursor.execute(queries["most_variable_advertisers"])
         row = cursor.fetchone()
-        stats["most_variable_advertiser"] = {"advertiser_id": row[0], "days_with_recommendations": row[1]} if row else {}
+        stats["most_variable_advertiser"] = {
+            "advertiser_id": row[0],
+            "days_with_recommendations": row[1]
+        } if row else {}
 
-        # Agreement between models
+        # Coincidencias entre ambos modelos
         cursor.execute(queries["model_agreement"])
         agreements = cursor.fetchall()
-        stats["model_agreement"] = [{"advertiser_id": row[0], "agreements": row[1]} for row in agreements]
+        stats["model_agreement"] = [
+            {"advertiser_id": row[0], "agreements": row[1]} for row in agreements
+        ]
 
         conn.close()
         return {"stats": stats}

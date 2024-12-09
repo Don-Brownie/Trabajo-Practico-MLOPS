@@ -21,3 +21,12 @@ async def stats():
 @app.get("/history/{adv}")
 async def history(adv: str):
     return await get_history(adv)
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
