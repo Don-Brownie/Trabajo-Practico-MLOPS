@@ -57,7 +57,7 @@ def run_filtrado():
 # Función para calcular TopCTR
 def calculate_top_ctr(**kwargs):
     print("Iniciando tarea: Calcular TopCTR")
-    download_path = os.path.expanduser('~/tmp')
+    download_path = '/tmp'
     ads_views = pd.read_csv(os.path.join(download_path, 'filtered_ads.csv'))
 
     # Calcular métricas
