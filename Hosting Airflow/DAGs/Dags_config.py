@@ -196,9 +196,14 @@ with DAG(
     catchup=False,
 ) as dag:
 
-    filter_task = PythonOperator(
-        task_id='filter_datasets',
-        python_callable=filter_datasets
+    filter_ads_views_task = PythonOperator(
+        task_id='filter_ads_views',
+        python_callable=lambda: save_to_ec2(filter_ads_views(ads_views, advertiser_ids), '/tmp/ads_views_filtered.csv')
+    )
+
+    filter_product_views_task = PythonOperator(
+        task_id='filter_product_views',
+        python_callable=lambda: save_to_ec2(filter_product_views(product_views, advertiser_ids), '/tmp/product_views_filtered.csv')
     )
 
     top_ctr_task = PythonOperator(
