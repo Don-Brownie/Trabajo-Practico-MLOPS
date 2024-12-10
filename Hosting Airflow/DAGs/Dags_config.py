@@ -27,10 +27,21 @@ def filter_product_views(product_views, advertiser_ids):
     return df
 
 def save_to_s3(df, s3_path):
-    s3_client = boto3.client('s3', region_name='us-east-1')
+    # Configuración
     bucket_name = 'grupo-17-mlops-bucket'
-    df_1 = df.to_csv(index=False)
-    s3_client.put_object(Bucket=bucket_name, Key=s3_path, Body=df_1)
+    region = 'us-east-1'
+
+    # Crear cliente de S3
+    s3_client = boto3.client('s3', region_name=region)
+
+    # Convertir DataFrame a CSV y almacenarlo en un buffer
+    csv_buffer = StringIO()
+    df.to_csv(csv_buffer, index=False)
+    csv_content = csv_buffer.getvalue()
+
+    # Subir archivo a S3
+    s3_client.put_object(Bucket=bucket_name, Key=s3_path, Body=csv_content)
+    print("Archivo subido exitosamente a s3")
 
 def run_filtrado():
     # Configurar S3 y parámetros
