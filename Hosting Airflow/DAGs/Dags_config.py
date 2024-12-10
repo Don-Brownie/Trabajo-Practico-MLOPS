@@ -26,17 +26,14 @@ def filter_product_views(product_views, advertiser_ids):
     df = df[df['date'] == datetime.today().strftime('%Y-%m-%d')]
     return df
 
-def save_to_s3(df, bucket_name, s3_path):
+def save_to_s3(df, s3_path):
     s3_client = boto3.client('s3', region_name='us-east-1')
-
-    csv_buffer = StringIO()
-    df.to_csv(csv_buffer, index=False)
-
-    s3_client.put_object(Bucket=bucket_name, Key=s3_path, Body=csv_buffer.getvalue())
+    bucket_name = 'grupo-17-mlops-bucket'
+    df_1 = df.to_csv(index=False)
+    s3_client.put_object(Bucket=bucket_name, Key=s3_path, Body=df_1)
 
 def run_filtrado():
     # Configurar S3 y parámetros
-    bucket_name = 'grupo-17-mlops-bucket'
     ads_views_key = 'ads_views.csv'
     advertiser_ids_key = 'advertiser_ids.csv'
     product_views_key = 'product_views.csv'
@@ -51,14 +48,13 @@ def run_filtrado():
     filtered_products = filter_product_views(product_views, advertiser_ids)
 
     # Guardar resultados en S3
-    save_to_s3(bucket_name, 'filtered_ads.csv', filtered_ads)
-    save_to_s3(bucket_name, 'filtered_products.csv', filtered_products)
+    save_to_s3('filtered_ads.csv', filtered_ads)
+    save_to_s3('filtered_products.csv', filtered_products)
     
     print("Archivos filtrados guardados en S3")
 
 # Función para calcular TopCTR
 def calculate_top_ctr(**kwargs):
-    bucket_name = 'grupo-17-mlops-bucket'
     filtered_ads_key = 'filtered_ads.csv'
     ads_views = read_s3_csv(bucket_name, filtered_ads_key)
 
@@ -75,13 +71,12 @@ def calculate_top_ctr(**kwargs):
     top_ctr['date'] = datetime.today().strftime('%Y-%m-%d')
 
     # Guardar resultados
-    save_to_s3(bucket_name, 'top_ctr.csv', top_ctr)
+    save_to_s3('top_ctr.csv', top_ctr)
     print("Tarea finalizada correctamente")	
 
 
 # Función para calcular TopProduct
 def calculate_top_product(**kwargs):   
-    bucket_name = 'grupo-17-mlops-bucket'
     filtered_prodcuts_key = 'filtered_products.csv'
     product_views = read_s3_csv(bucket_name, filtered_prodcuts_key)
 
@@ -93,7 +88,7 @@ def calculate_top_product(**kwargs):
     top_product['date'] = datetime.today().strftime('%Y-%m-%d')
         
     # Guardar resultados
-    save_to_s3(bucket_name, 'top_product.csv', top_product)
+    save_to_s3('top_product.csv', top_product)
     print("Tarea finalizada correctamente")
 
 # Función para escribir en PostgreSQL
