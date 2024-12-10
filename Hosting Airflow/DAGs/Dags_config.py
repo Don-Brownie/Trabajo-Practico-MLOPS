@@ -9,13 +9,11 @@ import psycopg2
 import boto3
 from io import StringIO
 
-# Función para leer archivos CSV desde S3
 def read_s3_csv(bucket_name, file_key):
     s3_client = boto3.client('s3', region_name='us-east-1')
     obj = s3_client.get_object(Bucket=bucket_name, Key=file_key)
     return pd.read_csv(obj['Body'])
 
-# Definir funciones de filtrado
 def filter_ads_views(ads_views, advertiser_ids):
     ads_views['date'] = pd.to_datetime(ads_views['date']).dt.date
     df = ads_views[ads_views['advertiser_id'].isin(advertiser_ids['advertiser_id'])]
@@ -28,10 +26,13 @@ def filter_product_views(product_views, advertiser_ids):
     df = df[df['date'] == datetime.today().strftime('%Y-%m-%d')]
     return df
 
-# Función para guardar los archivos filtrados en el sistema local de EC2
-def save_to_ec2(df, output_path):
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    df.to_csv(output_path, index=False)
+def save_to_s3(df, bucket_name, s3_path):
+    s3_client = boto3.client('s3', region_name='us-east-1')
+
+    csv_buffer = StringIO()
+    df.to_csv(csv_buffer, index=False)
+
+    s3_client.put_object(Bucket=bucket_name, Key=s3_path, Body=csv_buffer.getvalue())
 
 def run_filtrado():
     # Configurar S3 y parámetros
@@ -49,17 +50,17 @@ def run_filtrado():
     filtered_ads = filter_ads_views(ads_views, advertiser_ids)
     filtered_products = filter_product_views(product_views, advertiser_ids)
 
-    # Guardar resultados en EC2
-    save_to_ec2(filtered_ads, '/tmp/filtered_ads.csv')
-    save_to_ec2(filtered_products, '/tmp/filtered_products.csv')
+    # Guardar resultados en S3
+    save_to_s3(bucket_name, 'filtered_ads.csv', filtered_ads)
+    save_to_s3(bucket_name, 'filtered_products.csv', filtered_products)
     
-    print("Archivos filtrados guardados en EC2.")
+    print("Archivos filtrados guardados en S3")
 
 # Función para calcular TopCTR
 def calculate_top_ctr(**kwargs):
-    print("Iniciando tarea: Calcular TopCTR")
-    download_path = '/tmp'
-    ads_views = pd.read_csv(os.path.join(download_path, 'filtered_ads.csv'))
+    bucket_name = 'grupo-17-mlops-bucket'
+    filtered_ads_key = 'filtered_ads.csv'
+    ads_views = read_s3_csv(bucket_name, filtered_ads_key)
 
     # Calcular métricas
     clicks = ads_views[ads_views['type'] == 'click'].groupby(['advertiser_id', 'product_id']).size().reset_index(name='clicks')
@@ -74,14 +75,15 @@ def calculate_top_ctr(**kwargs):
     top_ctr['date'] = datetime.today().strftime('%Y-%m-%d')
 
     # Guardar resultados
-    top_ctr.to_csv(os.path.join(download_path, 'top_ctr.csv'), index=False)
-    print("Tarea finalizada correctamente")
+    save_to_s3(bucket_name, 'top_ctr.csv', top_ctr)
+    print("Tarea finalizada correctamente")	
+
 
 # Función para calcular TopProduct
-def calculate_top_product(**kwargs):
-    print("Iniciando tarea: Calcular TopProduct")
-    download_path = '/tmp'
-    product_views = pd.read_csv(os.path.join(download_path, 'filtered_products.csv'))
+def calculate_top_product(**kwargs):   
+    bucket_name = 'grupo-17-mlops-bucket'
+    filtered_prodcuts_key = 'filtered_products.csv'
+    product_views = read_s3_csv(bucket_name, filtered_prodcuts_key)
 
     # Calcular productos más vistos
     top_product = product_views.groupby(['advertiser_id', 'product_id']).size().reset_index(name='views')
@@ -91,7 +93,7 @@ def calculate_top_product(**kwargs):
     top_product['date'] = datetime.today().strftime('%Y-%m-%d')
         
     # Guardar resultados
-    top_product.to_csv(os.path.join(download_path, 'top_product.csv'), index=False)
+    save_to_s3(bucket_name, 'top_product.csv', top_product)
     print("Tarea finalizada correctamente")
 
 # Función para escribir en PostgreSQL
@@ -107,17 +109,18 @@ def write_to_postgres(**kwargs):
     }
 
     # Cargar datos
-    top_ctr = pd.read_csv(os.path.join(download_path, 'top_ctr.csv'))
-    top_product = pd.read_csv(os.path.join(download_path, 'top_product.csv'))
-
+    bucket_name = 'grupo-17-mlops-bucket'
+    top_ctr = read_s3_csv(bucket_name, 'top_ctr.csv')
+    top_product = read_s3_csv(bucket_name, 'top_product.csv')
+    
     # Conectar a la base de datos
     conn = psycopg2.connect(**db_config)
     cur = conn.cursor()
 
     # Crear tablas si no existen
     cur.execute("""CREATE TABLE IF NOT EXISTS top_ctr (
-        product_id VARCHAR(50),
         advertiser_id VARCHAR(50),
+        product_id VARCHAR(50),
         impressions INT,
         clicks INT,
         ctr FLOAT,
@@ -134,7 +137,7 @@ def write_to_postgres(**kwargs):
     # Insertar datos
     for _, row in top_ctr.iterrows():
         cur.execute(
-            "INSERT INTO top_ctr (product_id, advertiser_id, impressions, clicks, ctr, date) VALUES (%s, %s, %s, %s, %s, %s)",
+            "INSERT INTO top_ctr (advertiser_id, product_id, impressions, clicks, ctr, date) VALUES (%s, %s, %s, %s, %s, %s)",
             tuple(row)
         )
 
