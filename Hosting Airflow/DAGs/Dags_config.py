@@ -116,8 +116,8 @@ def write_to_postgres(**kwargs):
 
     # Crear tablas si no existen
     cur.execute("""CREATE TABLE IF NOT EXISTS top_ctr (
-        product_id VARCHAR(50),
         advertiser_id VARCHAR(50),
+        product_id VARCHAR(50),
         impressions INT,
         clicks INT,
         ctr FLOAT,
