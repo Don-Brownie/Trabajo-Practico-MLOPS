@@ -67,6 +67,7 @@ def run_filtrado():
 
 # Función para calcular TopCTR
 def calculate_top_ctr(**kwargs):
+    bucket_name = 'grupo-17-mlops-bucket'
     filtered_ads_key = 'filtered_ads.csv'
     ads_views = read_s3_csv(bucket_name, filtered_ads_key)
 
@@ -89,6 +90,7 @@ def calculate_top_ctr(**kwargs):
 
 # Función para calcular TopProduct
 def calculate_top_product(**kwargs):   
+    bucket_name = 'grupo-17-mlops-bucket'
     filtered_prodcuts_key = 'filtered_products.csv'
     product_views = read_s3_csv(bucket_name, filtered_prodcuts_key)
 
