@@ -45,6 +45,7 @@ def save_to_s3(df, s3_path):
 
 def run_filtrado():
     # Configurar S3 y parámetros
+    bucket_name = 'grupo-17-mlops-bucket'
     ads_views_key = 'ads_views.csv'
     advertiser_ids_key = 'advertiser_ids.csv'
     product_views_key = 'product_views.csv'
