@@ -82,7 +82,6 @@ def calculate_top_ctr(**kwargs):
     save_to_s3('top_ctr.csv', top_ctr)
     print("Tarea finalizada correctamente")	
 
-
 # Función para calcular TopProduct
 def calculate_top_product(**kwargs):   
     bucket_name = 'grupo-17-mlops-bucket'
