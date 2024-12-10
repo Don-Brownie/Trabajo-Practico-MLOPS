@@ -134,7 +134,7 @@ def write_to_postgres(**kwargs):
     # Insertar datos
     for _, row in top_ctr.iterrows():
         cur.execute(
-            "INSERT INTO top_ctr (product_id, advertiser_id, impressions, clicks, ctr, date) VALUES (%s, %s, %s, %s, %s, %s)",
+            "INSERT INTO top_ctr (advertiser_id, product_id, impressions, clicks, ctr, date) VALUES (%s, %s, %s, %s, %s, %s)",
             tuple(row)
         )
 
