@@ -123,6 +123,9 @@ def write_to_postgres(**kwargs):
     top_ctr = pd.read_csv(os.path.join(download_path, 'top_ctr.csv'))
     top_product = pd.read_csv(os.path.join(download_path, 'top_product.csv'))
 
+    top_ctr['date'] = pd.to_datetime(top_ctr['date'], errors='coerce').dt.date
+    top_product['date'] = pd.to_datetime(top_product['date'], errors='coerce').dt.date
+
     # Conectar a la base de datos
     conn = psycopg2.connect(**db_config)
     cur = conn.cursor()
