@@ -69,7 +69,7 @@ def calculate_top_ctr(**kwargs):
     # Unir y calcular CTR
     stats = pd.merge(impressions, clicks, on=['advertiser_id', 'product_id'], how='left').fillna(0)
     stats['ctr'] = stats['clicks'] / stats['impressions']
-    top_ctr = stats.sort_values(['advertiser_id', 'ctr'], ascending=[True, False]).groupby('advertiser_id','date')
+    top_ctr = stats.sort_values(['advertiser_id', 'ctr'], ascending=[True, False]).groupby(['advertiser_id','date'])
 
     # Agregar una columna que indica la fecha
     #top_ctr['date'] = datetime.today().strftime('%Y-%m-%d')
