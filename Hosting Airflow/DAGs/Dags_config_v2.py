@@ -138,10 +138,11 @@ def write_to_postgres(**kwargs):
     cur.execute("""CREATE TABLE IF NOT EXISTS top_ctr (
         advertiser_id VARCHAR(50),
         product_id VARCHAR(50),
+        date DATE,
         impressions INT,
         clicks INT,
         ctr FLOAT,
-        date DATE
+        
     );""")
 
     cur.execute("""CREATE TABLE IF NOT EXISTS top_product (
@@ -154,7 +155,7 @@ def write_to_postgres(**kwargs):
     # Insertar datos
     for _, row in top_ctr.iterrows():
         cur.execute(
-            "INSERT INTO top_ctr (advertiser_id, product_id, impressions, clicks, ctr, date) VALUES (%s, %s, %s, %s, %s, %s)",
+            "INSERT INTO top_ctr (advertiser_id, product_id, date, impressions, clicks, ctr) VALUES (%s, %s, %s, %s, %s, %s)",
             tuple(row)
         )
 
