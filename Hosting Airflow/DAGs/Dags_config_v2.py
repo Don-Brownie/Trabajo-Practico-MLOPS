@@ -91,7 +91,7 @@ def calculate_top_product(**kwargs):
     product_views = pd.read_csv(os.path.join(download_path, 'filtered_products.csv'))
 
     # Calcular productos más vistos
-   top_product = product_views.groupby(['advertiser_id', 'product_id', 'date']).size().reset_index(name='views')
+    top_product = product_views.groupby(['advertiser_id', 'product_id', 'date']).size().reset_index(name='views')
 
     # Sort by views and group by advertiser_id and date
     top_product = top_product.sort_values(by='views', ascending=False)
