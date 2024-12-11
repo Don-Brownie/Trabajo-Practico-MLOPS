@@ -77,7 +77,7 @@ def calculate_top_ctr(**kwargs):
     top_ctr = top_ctr.reset_index(drop=True)
     
     # Opcionalmente, agregar una columna con la fecha de hoy si es necesario
-    # top_ctr['date'] = datetime.today().strftime('%Y-%m-%d')
+    top_ctr['date'] = pd.to_datetime(top_ctr['date'], errors='coerce').dt.date
     
     # Guardar los resultados a un archivo CSV
     top_ctr.to_csv(os.path.join(download_path, 'top_ctr.csv'), index=False)
@@ -100,7 +100,7 @@ def calculate_top_product(**kwargs):
     top_product = top_product.reset_index(drop=True)
     
     # Optionally, add a new column with today's date if needed
-    # top_product['date'] = datetime.today().strftime('%Y-%m-%d')
+    top_product['date'] = pd.to_datetime(top_product['date'], errors='coerce').dt.date
     
     # Save the resulting DataFrame to a CSV file
     top_product.to_csv(os.path.join(download_path, 'top_product.csv'), index=False)
