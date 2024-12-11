@@ -47,21 +47,27 @@ async def get_stats():
 
         # Total Advertisers
         cursor.execute(queries["total_advertisers"])
-        stats["total_advertisers"] = cursor.fetchone()[0]
+        row = cursor.fetchone()
+        #RealDictRow([('count', 420)])
+        stats["total_advertisers"] = row["count"] if row else 0
+
 
         # Advertiser con más variaciones diarias en sus recomendaciones
         cursor.execute(queries["most_variable_advertisers"])
         row = cursor.fetchone()
-        stats["most_variable_advertiser"] = {
-            "advertiser_id": row[0],
-            "days_with_recommendations": row[1]
+        #RealDictRow([('advertiser_id', '00h07f'), ('count', 1)])
+        stats["most_variable_advertisers"] = {
+            "advertiser_id": row["advertiser_id"],
+            "days": row["count"]
         } if row else {}
 
         # Coincidencias entre ambos modelos
         cursor.execute(queries["model_agreement"])
         agreements = cursor.fetchall()
+        #[]
         stats["model_agreement"] = [
-            {"advertiser_id": row[0], "agreements": row[1]} for row in agreements
+            {"advertiser_id": row["advertiser_id"], "matches": row["count"]}
+            for row in agreements
         ]
 
         conn.close()

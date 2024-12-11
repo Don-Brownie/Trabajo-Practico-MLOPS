@@ -7,10 +7,10 @@ WORKDIR /app
 COPY . /app
 
 # Instala las dependencias especificadas en requirements.txt
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 # Expone el puerto 8000 para el contenedor
-EXPOSE 8000
+EXPOSE 8080
 
 # Comando para ejecutar la aplicación con Uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENTRYPOINT ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]

@@ -18,7 +18,7 @@ async def get_recommendations(adv: str, model: str):
         # Ajustar la consulta según el modelo
         if model == "top_ctr":
             query = """
-                SELECT advertiser_id AS product_id, product_id AS advertiser_id, ctr
+                SELECT advertiser_id, product_id,  ctr
                 FROM top_ctr
                 WHERE advertiser_id = %s AND date = CURRENT_DATE
                 ORDER BY ctr DESC
@@ -38,8 +38,9 @@ async def get_recommendations(adv: str, model: str):
         results = cursor.fetchall()
         conn.close()
 
-        # Construir las recomendaciones
-        recommendations = [{"product_id": row[0], "score": row[2]} for row in results]
+        recommendations = [
+            {k: row[k] for k in row.keys()} for row in results
+        ]
         return {"adv": adv, "model": model, "recommendations": recommendations}
 
     except Exception as e:
