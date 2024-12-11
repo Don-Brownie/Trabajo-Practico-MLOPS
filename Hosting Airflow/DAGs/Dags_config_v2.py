@@ -127,6 +127,10 @@ def write_to_postgres(**kwargs):
     conn = psycopg2.connect(**db_config)
     cur = conn.cursor()
 
+    # Eliminar las tablas si existen
+    cur.execute("DROP TABLE IF EXISTS top_ctr;")
+    cur.execute("DROP TABLE IF EXISTS top_product;")
+
     # Crear tablas si no existen
     cur.execute("""CREATE TABLE IF NOT EXISTS top_ctr (
         advertiser_id VARCHAR(50),
