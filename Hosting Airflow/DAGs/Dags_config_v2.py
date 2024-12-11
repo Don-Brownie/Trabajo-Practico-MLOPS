@@ -71,7 +71,10 @@ def calculate_top_ctr(**kwargs):
     stats['ctr'] = stats['clicks'] / stats['impressions']
     
     # Ordenar por CTR y agrupar por advertiser_id y date
-    top_ctr = stats.sort_values(['advertiser_id', 'ctr'], ascending=[True, False])
+    stats = stats.sort_values(['advertiser_id', 'date', 'ctr'], ascending=[True, True, False])
+    
+    # Seleccionar solo los 20 mejores por cada día y por cada advertiser_id
+    top_ctr = stats.groupby('date').head(20)
     
     # Resetear el índice para poder guardar el CSV
     top_ctr = top_ctr.reset_index(drop=True)
@@ -94,7 +97,10 @@ def calculate_top_product(**kwargs):
     top_product = product_views.groupby(['advertiser_id', 'product_id', 'date']).size().reset_index(name='views')
 
     # Sort by views and group by advertiser_id and date
-    top_product = top_product.sort_values(by='views', ascending=False)
+    top_product = top_product.sort_values(by=['advertiser_id', 'date', 'views'], ascending=[True, True, False])
+    
+    # Seleccionar solo los 20 productos más vistos por cada día
+    top_product = top_product.groupby('date').head(20)
     
     # Reset index to flatten the DataFrame
     top_product = top_product.reset_index(drop=True)
