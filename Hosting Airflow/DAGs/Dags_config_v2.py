@@ -141,7 +141,7 @@ def write_to_postgres(**kwargs):
         date DATE,
         impressions INT,
         clicks INT,
-        ctr FLOAT,
+        ctr FLOAT
         
     );""")
 
