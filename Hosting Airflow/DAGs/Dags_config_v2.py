@@ -67,15 +67,21 @@ def calculate_top_ctr(**kwargs):
     impressions = ads_views[ads_views['type'] == 'impression'].groupby(['advertiser_id', 'product_id','date']).size().reset_index(name='impressions')
 
     # Unir y calcular CTR
-    stats = pd.merge(impressions, clicks, on=['advertiser_id', 'product_id'], how='left').fillna(0)
+    stats = pd.merge(impressions, clicks, on=['advertiser_id', 'product_id', 'date'], how='left').fillna(0)
     stats['ctr'] = stats['clicks'] / stats['impressions']
-    top_ctr = stats.sort_values(['advertiser_id', 'ctr'], ascending=[True, False]).groupby(['advertiser_id','date'])
-
-    # Agregar una columna que indica la fecha
-    #top_ctr['date'] = datetime.today().strftime('%Y-%m-%d')
-
-    # Guardar resultados
+    
+    # Ordenar por CTR y agrupar por advertiser_id y date
+    top_ctr = stats.sort_values(['advertiser_id', 'ctr'], ascending=[True, False])
+    
+    # Resetear el índice para poder guardar el CSV
+    top_ctr = top_ctr.reset_index(drop=True)
+    
+    # Opcionalmente, agregar una columna con la fecha de hoy si es necesario
+    # top_ctr['date'] = datetime.today().strftime('%Y-%m-%d')
+    
+    # Guardar los resultados a un archivo CSV
     top_ctr.to_csv(os.path.join(download_path, 'top_ctr.csv'), index=False)
+    
     print("Tarea finalizada correctamente")
 
 # Función para calcular TopProduct
@@ -85,14 +91,20 @@ def calculate_top_product(**kwargs):
     product_views = pd.read_csv(os.path.join(download_path, 'filtered_products.csv'))
 
     # Calcular productos más vistos
-    top_product = product_views.groupby(['advertiser_id', 'product_id','date']).size().reset_index(name='views')
-    top_product = top_product.sort_values(by='views', ascending=False).groupby(['advertiser_id','date'])
+   top_product = product_views.groupby(['advertiser_id', 'product_id', 'date']).size().reset_index(name='views')
 
-    #Agrgar una columna que indica la fecha
-    #top_product['date'] = datetime.today().strftime('%Y-%m-%d')
-        
-    # Guardar resultados
+    # Sort by views and group by advertiser_id and date
+    top_product = top_product.sort_values(by='views', ascending=False)
+    
+    # Reset index to flatten the DataFrame
+    top_product = top_product.reset_index(drop=True)
+    
+    # Optionally, add a new column with today's date if needed
+    # top_product['date'] = datetime.today().strftime('%Y-%m-%d')
+    
+    # Save the resulting DataFrame to a CSV file
     top_product.to_csv(os.path.join(download_path, 'top_product.csv'), index=False)
+    
     print("Tarea finalizada correctamente")
 
 # Función para escribir en PostgreSQL
