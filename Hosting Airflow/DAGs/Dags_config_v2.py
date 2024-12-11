@@ -162,7 +162,7 @@ default_args = {
 
 # Definición del DAG
 with DAG(
-    'grupo17',
+    'grupo17_2',
     default_args=default_args,
     description='Pipeline de procesamiento de datos y escritura en PostgreSQL',
     schedule='@daily',
