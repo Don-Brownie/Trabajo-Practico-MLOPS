@@ -1,4 +1,5 @@
 from app.database.connection import get_connection
+from psycopg2.extras import RealDictCursor
 
 async def get_history(adv: str):
     """
@@ -8,9 +9,9 @@ async def get_history(adv: str):
         adv (str): Advertiser ID.
 
     Returns:
-        dict o list:
-            - Una lista de objetos con las recomendaciones si se encuentran.
-            - Un objeto con el campo "error" en caso de no encontrar datos o haber un error.
+        dict: Objeto JSON con "adv" y "history".
+              Si no hay datos, "history" será una lista vacía.
+              Si hay un error, devolverá {"error": "<mensaje>"}
     """
     query = """
         SELECT date, product_id, 'top_ctr' AS source
@@ -25,24 +26,18 @@ async def get_history(adv: str):
 
     try:
         conn = get_connection()
-        cursor = conn.cursor()
-
-        # Ejecutar la consulta con el advertiser ID
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
         cursor.execute(query, (adv, adv))
-        history = cursor.fetchall()
+        results = cursor.fetchall()
         conn.close()
 
-        # Si no hay resultados, devolver un arreglo vacío
-        if not history:
-            return []  # Se devuelve una lista vacía si no hay resultados
+        # Convertir cada fila en dict
+        history = [dict(row) for row in results] if results else []
 
-        # Formatear los resultados
-        formatted_history = [
-            {"date": str(row[0]), "product_id": row[1], "source": row[2]}
-            for row in history
-        ]
-
-        return formatted_history
+        return {
+            "adv": adv,
+            "history": history
+        }
 
     except Exception as e:
         return {"error": str(e)}
