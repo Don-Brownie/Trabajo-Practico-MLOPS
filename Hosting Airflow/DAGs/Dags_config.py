@@ -71,7 +71,7 @@ def calculate_top_ctr(**kwargs):
     stats['ctr'] = stats['clicks'] / stats['impressions']
     
     # Ordenar por CTR y agrupar por advertiser_id y date
-    stats = stats.sort_values(['ctr'], ascending=[True, True, False])
+    stats = stats.sort_values(['ctr'], ascending=False)
     
     # Seleccionar solo los 20 mejores por cada día y por cada advertiser_id
     top_ctr = stats.head(20)
@@ -97,7 +97,7 @@ def calculate_top_product(**kwargs):
     top_product = product_views.groupby(['advertiser_id', 'product_id']).size().reset_index(name='views')
 
     # Ordenar por views
-    top_product = top_product.sort_values(by=['views'], ascending=[True, True, False])
+    top_product = top_product.sort_values(by=['views'], ascending=False)
     
     # Seleccionar solo los 20 productos más vistos por cada día
     top_product = top_product.head(20)
