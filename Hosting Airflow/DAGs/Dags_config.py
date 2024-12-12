@@ -30,10 +30,16 @@ def filter_product_views(product_views, advertiser_ids):
     return df
 
 # Función para guardar los archivos filtrados en el sistema local de EC2
-def save_to_ec2(df, output_path):
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    df.to_csv(output_path, index=False)
+#def save_to_ec2(df, output_path):
+ #   os.makedirs(os.path.dirname(output_path), exist_ok=True)
+  #  df.to_csv(output_path, index=False)
 
+def save_to_s3(df, bucket_name, file_key):
+    s3_client = boto3.client('s3', region_name='us-east-1')
+    csv_buffer = StringIO()
+    df.to_csv(csv_buffer, index=False)
+    s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=csv_buffer.getvalue())
+    
 def run_filtrado():
     # Configurar S3 y parámetros
     bucket_name = 'grupo-17-mlops-bucket'
@@ -50,48 +56,36 @@ def run_filtrado():
     filtered_ads = filter_ads_views(ads_views, advertiser_ids)
     filtered_products = filter_product_views(product_views, advertiser_ids)
 
-    # Guardar resultados en EC2
-    save_to_ec2(filtered_ads, '/tmp/filtered_ads.csv')
-    save_to_ec2(filtered_products, '/tmp/filtered_products.csv')
+    # Guardar resultados en s3
+    save_to_s3(filtered_ads, '/tmp/filtered_ads.csv')
+    save_to_s3(filtered_products, '/tmp/filtered_products.csv')
     
-    print("Archivos filtrados guardados en EC2.")
+    print("Archivos filtrados guardados en S3.")
 
-# Función para calcular TopCTR
 def calculate_top_ctr(**kwargs):
     print("Iniciando tarea: Calcular TopCTR")
-    download_path = '/tmp'
-    ads_views = pd.read_csv(os.path.join(download_path, 'filtered_ads.csv'))
+    bucket_name = 'grupo-17-mlops-bucket'
+    s3_client = boto3.client('s3', region_name='us-east-1')
+    obj = s3_client.get_object(Bucket=bucket_name, Key='filtered_ads.csv')
+    ads_views = pd.read_csv(obj['Body'])
 
     # Calcular métricas
     clicks = ads_views[ads_views['type'] == 'click'].groupby(['advertiser_id', 'product_id']).size().reset_index(name='clicks')
     impressions = ads_views[ads_views['type'] == 'impression'].groupby(['advertiser_id', 'product_id']).size().reset_index(name='impressions')
-
-    # Unir y calcular CTR
     stats = pd.merge(impressions, clicks, on=['advertiser_id', 'product_id'], how='left').fillna(0)
     stats['ctr'] = stats['clicks'] / stats['impressions']
-    
-    # Ordenar por CTR y agrupar por advertiser_id y date
-    stats = stats.sort_values(['ctr'], ascending=False)
-    
-    # Seleccionar solo los 20 mejores por cada día y por cada advertiser_id
-    top_ctr = stats.head(20)
-    
-    # Resetear el índice para poder guardar el CSV
-    top_ctr = top_ctr.reset_index(drop=True)
-    
-    # Agregar una columna con la fecha
-    top_ctr['date'] = pd.Timestamp.now().date()
+    stats = stats.sort_values(['ctr'], ascending=False).head(20)
+    stats['date'] = pd.Timestamp.now().date()
 
-    # Guardar los resultados a un archivo CSV
-    top_ctr.to_csv(os.path.join(download_path, 'top_ctr.csv'), index=False)
-    
-    print("Tarea finalizada correctamente")
+    save_to_s3(stats, bucket_name, 'top_ctr.csv')
 
 # Función para calcular TopProduct
 def calculate_top_product(**kwargs):
     print("Iniciando tarea: Calcular TopProduct")
-    download_path = '/tmp'
-    product_views = pd.read_csv(os.path.join(download_path, 'filtered_products.csv'))
+    bucket_name = 'grupo-17-mlops-bucket'
+    s3_client = boto3.client('s3', region_name='us-east-1')
+    obj = s3_client.get_object(Bucket=bucket_name, Key='filtered_products.csv')
+    ads_views = pd.read_csv(obj['Body'])
 
     # Calcular productos más vistos
     top_product = product_views.groupby(['advertiser_id', 'product_id']).size().reset_index(name='views')
@@ -108,9 +102,7 @@ def calculate_top_product(**kwargs):
     # Agregar una columna con la fecha
     top_product['date'] = pd.Timestamp.now().date()
     
-    # Guardar los resultados a un archivo CSV
-    top_product.to_csv(os.path.join(download_path, 'top_product.csv'), index=False)
-    
+    save_to_s3(stats, bucket_name, 'top_product.csv')
     print("Tarea finalizada correctamente")
 
 # Función para escribir en PostgreSQL
