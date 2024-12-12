@@ -26,6 +26,7 @@ def filter_product_views(product_views, advertiser_ids):
     advertisers = advertiser_ids['advertiser_id'].tolist()
     df = product_views[product_views['advertiser_id'].isin(advertisers)]
     df = df[df['date'] == datetime.today().strftime('%Y-%m-%d')]
+    
     return df
 
 # Función para guardar los archivos filtrados en el sistema local de EC2
@@ -68,13 +69,22 @@ def calculate_top_ctr(**kwargs):
     # Unir y calcular CTR
     stats = pd.merge(impressions, clicks, on=['advertiser_id', 'product_id'], how='left').fillna(0)
     stats['ctr'] = stats['clicks'] / stats['impressions']
-    top_ctr = stats.sort_values(['advertiser_id', 'ctr'], ascending=[True, False]).groupby('advertiser_id').head(20)
-
-    # Agregar una columna que indica la fecha
-    top_ctr['date'] = datetime.today().strftime('%Y-%m-%d')
-
-    # Guardar resultados
+    
+    # Ordenar por CTR y agrupar por advertiser_id y date
+    stats = stats.sort_values(['ctr'], ascending=[True, True, False])
+    
+    # Seleccionar solo los 20 mejores por cada día y por cada advertiser_id
+    top_ctr = stats.head(20)
+    
+    # Resetear el índice para poder guardar el CSV
+    top_ctr = top_ctr.reset_index(drop=True)
+    
+    # Agregar una columna con la fecha
+    top_ctr['date'] = pd.to_datetime(top_ctr['date'], errors='coerce').dt.date
+    
+    # Guardar los resultados a un archivo CSV
     top_ctr.to_csv(os.path.join(download_path, 'top_ctr.csv'), index=False)
+    
     print("Tarea finalizada correctamente")
 
 # Función para calcular TopProduct
@@ -85,13 +95,22 @@ def calculate_top_product(**kwargs):
 
     # Calcular productos más vistos
     top_product = product_views.groupby(['advertiser_id', 'product_id']).size().reset_index(name='views')
-    top_product = top_product.sort_values(by='views', ascending=False).groupby('advertiser_id').head(20)
 
-    #Agrgar una columna que indica la fecha
-    top_product['date'] = datetime.today().strftime('%Y-%m-%d')
-        
-    # Guardar resultados
+    # Ordenar por views
+    top_product = top_product.sort_values(by=['views'], ascending=[True, True, False])
+    
+    # Seleccionar solo los 20 productos más vistos por cada día
+    top_product = top_product.head(20)
+    
+    # Resetear el índice para poder guardar el CSV
+    top_product = top_product.reset_index(drop=True)
+    
+    # Agregar una columna con la fecha
+    top_product['date'] = pd.to_datetime(top_product['date'], errors='coerce').dt.date
+    
+    # Guardar los resultados a un archivo CSV
     top_product.to_csv(os.path.join(download_path, 'top_product.csv'), index=False)
+    
     print("Tarea finalizada correctamente")
 
 # Función para escribir en PostgreSQL
@@ -110,37 +129,23 @@ def write_to_postgres(**kwargs):
     top_ctr = pd.read_csv(os.path.join(download_path, 'top_ctr.csv'))
     top_product = pd.read_csv(os.path.join(download_path, 'top_product.csv'))
 
+    top_ctr['date'] = pd.to_datetime(top_ctr['date'], errors='coerce').dt.date
+    top_product['date'] = pd.to_datetime(top_product['date'], errors='coerce').dt.date
+
     # Conectar a la base de datos
     conn = psycopg2.connect(**db_config)
     cur = conn.cursor()
 
-    # Crear tablas si no existen
-    cur.execute("""CREATE TABLE IF NOT EXISTS top_ctr (
-        advertiser_id VARCHAR(50),
-        product_id VARCHAR(50),
-        impressions INT,
-        clicks INT,
-        ctr FLOAT,
-        date DATE
-    );""")
-
-    cur.execute("""CREATE TABLE IF NOT EXISTS top_product (
-        advertiser_id VARCHAR(50),
-        product_id VARCHAR(50),
-        views INT,
-        date DATE
-    );""")
-
     # Insertar datos
     for _, row in top_ctr.iterrows():
         cur.execute(
-            "INSERT INTO top_ctr (advertiser_id, product_id, impressions, clicks, ctr, date) VALUES (%s, %s, %s, %s, %s, %s)",
+            "INSERT INTO top_ctr (advertiser_id, product_id, date, impressions, clicks, ctr) VALUES (%s, %s, %s, %s, %s, %s)",
             tuple(row)
         )
 
     for _, row in top_product.iterrows():
         cur.execute(
-            "INSERT INTO top_product (advertiser_id, product_id, views, date) VALUES (%s, %s, %s, %s)",
+            "INSERT INTO top_product (advertiser_id, product_id, date, views) VALUES (%s, %s, %s, %s)",
             tuple(row)
         )
 
@@ -161,7 +166,7 @@ default_args = {
 
 # Definición del DAG
 with DAG(
-    'grupo17',
+    'grupo17_2',
     default_args=default_args,
     description='Pipeline de procesamiento de datos y escritura en PostgreSQL',
     schedule='@daily',
