@@ -80,8 +80,8 @@ def calculate_top_ctr(**kwargs):
     top_ctr = top_ctr.reset_index(drop=True)
     
     # Agregar una columna con la fecha
-    top_ctr['date'] = pd.to_datetime(top_ctr['date'], errors='coerce').dt.date
-    
+    top_ctr['date'] = datetime.date.today()
+
     # Guardar los resultados a un archivo CSV
     top_ctr.to_csv(os.path.join(download_path, 'top_ctr.csv'), index=False)
     
@@ -106,7 +106,7 @@ def calculate_top_product(**kwargs):
     top_product = top_product.reset_index(drop=True)
     
     # Agregar una columna con la fecha
-    top_product['date'] = pd.to_datetime(top_product['date'], errors='coerce').dt.date
+    top_product['date'] = datetime.date.today()
     
     # Guardar los resultados a un archivo CSV
     top_product.to_csv(os.path.join(download_path, 'top_product.csv'), index=False)
