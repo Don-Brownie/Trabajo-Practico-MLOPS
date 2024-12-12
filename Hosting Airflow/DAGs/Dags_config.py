@@ -2,7 +2,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 import os
 from pathlib import Path
 import pandas as pd
