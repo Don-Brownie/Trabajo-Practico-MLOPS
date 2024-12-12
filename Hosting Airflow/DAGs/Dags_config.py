@@ -81,7 +81,6 @@ def calculate_top_ctr(**kwargs):
     
     # Agregar una columna con la fecha
     top_ctr['date'] = pd.Timestamp.now().date()
-    top_ctr['date']= pd.to_datetime(top_ctr['date'])
 
     # Guardar los resultados a un archivo CSV
     top_ctr.to_csv(os.path.join(download_path, 'top_ctr.csv'), index=False)
@@ -108,7 +107,6 @@ def calculate_top_product(**kwargs):
     
     # Agregar una columna con la fecha
     top_product['date'] = pd.Timestamp.now().date()
-    top_product['date']= pd.to_datetime(top_product['date'])
     
     # Guardar los resultados a un archivo CSV
     top_product.to_csv(os.path.join(download_path, 'top_product.csv'), index=False)
@@ -141,13 +139,13 @@ def write_to_postgres(**kwargs):
     # Insertar datos
     for _, row in top_ctr.iterrows():
         cur.execute(
-            "INSERT INTO top_ctr (advertiser_id, product_id, date, impressions, clicks, ctr) VALUES (%s, %s, %s, %s, %s, %s)",
+            "INSERT INTO top_ctr (advertiser_id, product_id, impressions, clicks, ctr, date) VALUES (%s, %s, %s, %s, %s, %s)",
             tuple(row)
         )
 
     for _, row in top_product.iterrows():
         cur.execute(
-            "INSERT INTO top_product (advertiser_id, product_id, date, views) VALUES (%s, %s, %s, %s)",
+            "INSERT INTO top_product (advertiser_id, product_id, views, date) VALUES (%s, %s, %s, %s)",
             tuple(row)
         )
 
