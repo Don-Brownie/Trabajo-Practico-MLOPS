@@ -1,7 +1,6 @@
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-import datetime
 from datetime import datetime, timedelta
 import os
 from pathlib import Path
@@ -81,7 +80,7 @@ def calculate_top_ctr(**kwargs):
     top_ctr = top_ctr.reset_index(drop=True)
     
     # Agregar una columna con la fecha
-    top_ctr['date'] = datetime.date.today()
+    top_ctr['date'] = pd.Timestamp.now().date()
 
     # Guardar los resultados a un archivo CSV
     top_ctr.to_csv(os.path.join(download_path, 'top_ctr.csv'), index=False)
@@ -107,7 +106,7 @@ def calculate_top_product(**kwargs):
     top_product = top_product.reset_index(drop=True)
     
     # Agregar una columna con la fecha
-    top_product['date'] = datetime.date.today()
+    top_product['date'] = pd.Timestamp.now().date()
     
     # Guardar los resultados a un archivo CSV
     top_product.to_csv(os.path.join(download_path, 'top_product.csv'), index=False)
